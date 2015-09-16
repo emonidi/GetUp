@@ -45,6 +45,7 @@ public class SittingState implements StatesInterface {
                 Log.d("SITTING","Las step time: "+ String.valueOf(lastStepTime)+"| Now: "+ String.valueOf(now));
 
                 if(now < (lastStepTime+60000)){
+                    Log.d("TIME",String.valueOf(now < (lastStepTime+60000)));
                     try {
                         thread.sleep(100);
                         this.run();
