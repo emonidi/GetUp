@@ -61,8 +61,11 @@ public class SittingState implements StatesInterface {
 
         if(thread == null){
             thread = new Thread(runnable);
+            thread.start();
+        }else{
+            thread.run();
         }
-        thread.start();
+
     }
 
     @Override
