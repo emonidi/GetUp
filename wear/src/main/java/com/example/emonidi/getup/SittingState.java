@@ -46,6 +46,7 @@ public class SittingState implements StatesInterface {
                     time.setToNow();
                     long now = time.toMillis(true);
                     if(now > (lastStepTime + 3600000)){
+                        //call return in the runnable
                         thread.interrupt();
                         stateSetter.setState("NOTIFYING");
                         try {
