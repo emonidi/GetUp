@@ -17,11 +17,13 @@ public class SittingState implements StatesInterface {
     private Thread thread;
     private Runnable runnable;
     private Timestamp now;
+    private long lastStepTime;
+    private Time time;
 
-    public SittingState(TimerService.StateSetter stateSetter){
+    public SittingState(TimerService.StateSetter stateSetter) {
 
         this.stateSetter = stateSetter;
-
+        time = new Time();
 
     }
 
@@ -33,36 +35,33 @@ public class SittingState implements StatesInterface {
     @Override
     public void Sitting() {
 
-        final Time time = new Time();
 
         time.setToNow();
-        final long lastStepTime = time.toMillis(true);
+        lastStepTime = time.toMillis(true);
         runnable = new Runnable() {
             @Override
             public void run() {
-                time.setToNow();
-                long now = time.toMillis(true);
-                Log.d("SITTING","Las step time: "+ String.valueOf(lastStepTime)+"| Now: "+ String.valueOf(now));
 
-                if(now < (lastStepTime+60000)){
-                    Log.d("TIME",String.valueOf(now < (lastStepTime+60000)));
-                    try {
-                        thread.sleep(100);
-                        this.run();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                while (stateSetter.getState() == "SITTING") {
+                    time.setToNow();
+                    long now = time.toMillis(true);
+                    if(now > (lastStepTime + 3600000)){
+                        thread.interrupt();
+                        stateSetter.setState("NOTIFYING");
+                        try {
+                            thread.sleep(6000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
-                }else{
-                    stateSetter.setState("NOTIFYING");
                 }
-
             }
         };
 
-        if(thread == null){
+        if (thread == null) {
             thread = new Thread(runnable);
             thread.start();
-        }else{
+        } else {
             thread.run();
         }
 

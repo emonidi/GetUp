@@ -28,7 +28,6 @@ import java.util.logging.Handler;
  */
 public class TimerService extends IntentService {
 
-    private String state;
     private Thread sittingThread;
     private Thread walkingThread;
     private Thread notifyingThread;
@@ -56,29 +55,45 @@ public class TimerService extends IntentService {
 
         StateSetter stateSetter = new StateSetter();
 
-        sittingThread = new Thread("sittingThread");
-        walkingThread = new Thread("walkingThread");
-        notifyingThread = new Thread("notifyingThread");
 
         sittingState = new SittingState(stateSetter);
-
+        notifyingState = new NotifyingState(getBaseContext(),stateSetter);
+        walkingState = new WalkingState(getBaseContext(),stateSetter);
         stateSetter.setState("SITTING");
 
     }
 
     public class StateSetter {
 
+        public String state;
+
+
         public StateSetter(){
 
         }
 
+        public String getState(){
+            return this.state;
+        }
+
         public void setState(String state){
+            this.state = state;
             switch (state){
                 case "SITTING":
                     sittingState.Sitting();
                     break;
+                case "NOTIFYING":
+                    Log.d("STATUS","CHANGING STATE TO NOTIFYING");
+                    notifyingState.Notifying();
+                    break;
+                case "WALKING":
+                    walkingState.Walking();
+                    break;
             }
         }
+
+
+
     }
 
 
