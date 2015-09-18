@@ -8,18 +8,22 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
+import java.util.concurrent.ExecutorService;
+
 /**
  * Created by emonidi on 16.9.2015 г..
  */
 public class NotifyingState implements StatesInterface {
-    Thread thread;
-    Runnable runnable;
-    Context context;
-    TimerService.StateSetter stateSetter;
+    private Thread thread;
+    private Runnable runnable;
+    private Context context;
+    private TimerService.StateSetter stateSetter;
+    private ExecutorService executorService;
 
-    public NotifyingState(Context context,TimerService.StateSetter stateSetter){
+    public NotifyingState(Context context,TimerService.StateSetter stateSetter,ExecutorService executorService){
         this.context = context;
         this.stateSetter = stateSetter;
+        this.executorService = executorService;
     }
 
     @Override
@@ -38,27 +42,22 @@ public class NotifyingState implements StatesInterface {
         runnable = new Runnable() {
             @Override
             public void run() {
-                Log.d("STATE",stateSetter.getState());
+                Log.d("STATE", stateSetter.getState());
                 while (stateSetter.getState() == "NOTIFYING"){
                     Log.d("STATE","NOTIFICATION LOOP");
                     notification();
                     try {
-                        thread.sleep(300000);
+                        Thread.sleep(300000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
 
-                thread.interrupt();
+
             }
         };
 
-        if(thread == null){
-            thread = new Thread(runnable);
-            thread.start();
-        }else{
-            thread.run();
-        }
+        this.executorService.execute(runnable);
     }
 
     private void notification(){

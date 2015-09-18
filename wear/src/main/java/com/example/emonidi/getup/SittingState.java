@@ -7,6 +7,7 @@ import android.util.Log;
 
 import java.security.Timestamp;
 import java.util.Timer;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Created by emonidi on 16.9.2015 г..
@@ -19,9 +20,11 @@ public class SittingState implements StatesInterface {
     private Timestamp now;
     private long lastStepTime;
     private Time time;
+    private ExecutorService executorService;
 
-    public SittingState(TimerService.StateSetter stateSetter) {
+    public SittingState(TimerService.StateSetter stateSetter,ExecutorService executorService) {
 
+        this.executorService = executorService;
         this.stateSetter = stateSetter;
         time = new Time();
 
@@ -43,27 +46,24 @@ public class SittingState implements StatesInterface {
             public void run() {
 
                 while (stateSetter.getState() == "SITTING") {
+                    Log.d("STATUS","SITTING");
                     time.setToNow();
                     long now = time.toMillis(true);
-                    if(now > (lastStepTime + 3600000)){
-                        thread.interrupt();
+                    if(now > (lastStepTime + 60000)){
                         stateSetter.setState("NOTIFYING");
-                        try {
-                            thread.sleep(6000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                        return;
+                    }
+
+                    try {
+                       Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
             }
         };
 
-        if (thread == null) {
-            thread = new Thread(runnable);
-            thread.start();
-        } else {
-            thread.run();
-        }
+        this.executorService.execute(runnable);
 
     }
 

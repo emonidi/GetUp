@@ -19,6 +19,8 @@ import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Handler;
@@ -35,6 +37,8 @@ public class TimerService extends IntentService {
     public WalkingState walkingState;
     public SittingState sittingState;
     public NotifyingState notifyingState;
+
+    ExecutorService executorService;
 
     /**
      * Creates an IntentService.  Invoked by your subclass's constructor.
@@ -55,10 +59,11 @@ public class TimerService extends IntentService {
 
         StateSetter stateSetter = new StateSetter();
 
+        executorService = Executors.newFixedThreadPool(3);
 
-        sittingState = new SittingState(stateSetter);
-        notifyingState = new NotifyingState(getBaseContext(),stateSetter);
-        walkingState = new WalkingState(getBaseContext(),stateSetter);
+        sittingState = new SittingState(stateSetter,executorService);
+        notifyingState = new NotifyingState(getBaseContext(),stateSetter,executorService);
+        walkingState = new WalkingState(getBaseContext(),stateSetter,executorService);
         stateSetter.setState("SITTING");
 
     }

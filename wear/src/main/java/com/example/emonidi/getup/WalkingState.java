@@ -7,6 +7,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
+import java.util.concurrent.ExecutorService;
+
 /**
  * Created by emonidi on 16.9.2015 г..
  */
@@ -17,10 +19,12 @@ public class WalkingState implements StatesInterface {
     private TimerService.StateSetter stateSetter;
     private Runnable runnable;
     private Thread thread;
+    private ExecutorService executorService;
 
-    public WalkingState(final Context context, final TimerService.StateSetter stateSetter){
+    public WalkingState(final Context context, final TimerService.StateSetter stateSetter,ExecutorService executorService){
         this.context = context;
         this.stateSetter = stateSetter;
+        this.executorService = executorService;
 
         steps = 0;
         Runnable sensorRunnable = new Runnable() {
@@ -43,7 +47,7 @@ public class WalkingState implements StatesInterface {
                     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
                     }
-                },sensor,0);
+                },sensor,100);
             }
         };
 
@@ -58,9 +62,10 @@ public class WalkingState implements StatesInterface {
             @Override
             public void run() {
                 while (stateSetter.getState() == "WALKING"){
+                    Log.d("STATUS","WALKING");
                     int lastStepCount = steps;
                     try {
-                        thread.sleep(30000);
+                        Thread.sleep(30000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -72,12 +77,7 @@ public class WalkingState implements StatesInterface {
             }
         };
 
-        if(thread == null){
-            thread = new Thread(runnable);
-            thread.start();
-        }else{
-            thread.run();
-        }
+        this.executorService.execute(runnable);
     }
 
     @Override
